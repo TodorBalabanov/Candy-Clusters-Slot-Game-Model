@@ -11,14 +11,35 @@ public class Main {
 	private static final Random PRNG = new Random();
 	
 	/**
+	 * Minimum wining cluster size.
+	 */
+	private static final int MIN_CLUSTER_SIZE = 8;
+	
+	/**
+	 * Maximum wining cluster size.
+	 */
+	private static final int MAX_CLUSTER_SIZE = 30;
+	
+	/**
 	 * Current visible symbols on the screen.
 	 */
 	private static final int[][] view = {
-		new int[]{ -1, -1, -1, -1, -1, -1 },
-		new int[]{ -1, -1, -1, -1, -1, -1 },
-		new int[]{ -1, -1, -1, -1, -1, -1 },
-		new int[]{ -1, -1, -1, -1, -1, -1 },
-		new int[]{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+	};
+	
+	/**
+	 * Current visible screen clusters.
+	 */
+	private static final int[][] clusters = {
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
+		{ -1, -1, -1, -1, -1, -1 },
 	};
 	
 	/**
@@ -51,42 +72,43 @@ public class Main {
 	 * Slot game pay table.
 	 */
 	private static final int[][] paytable = {
-			{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	780,	510,	240,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	790,	530,	270,	10,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	800,	550,	300,	50,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	810,	570,	330,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	820,	590,	360,	130,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	830,	610,	390,	170,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	840,	630,	420,	210,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	850,	650,	450,	250,	50,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	860,	670,	480,	290,	100,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	870,	690,	510,	330,	150,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	880,	710,	540,	370,	200,	30,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	890,	730,	570,	410,	250,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	900,	750,	600,	450,	300,	150,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	910,	770,	630,	490,	350,	210,	70,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	920,	790,	660,	530,	400,	270,	140,	10,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	930,	810,	690,	570,	450,	330,	210,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	940,	830,	720,	610,	500,	390,	280,	170,	60,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	950,	850,	750,	650,	550,	450,	350,	250,	150,	50,	0,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	960,	870,	780,	690,	600,	510,	420,	330,	240,	150,	60,	0,	0,	0,	0,	0,	0,	0},
-			{0,	0,	0,	970,	890,	810,	730,	650,	570,	490,	410,	330,	250,	170,	90,	10,	0,	0,	0,	0,	0},
-			{0,	0,	0,	980,	910,	840,	770,	700,	630,	560,	490,	420,	350,	280,	210,	140,	70,	0,	0,	0,	0},
-			{0,	0,	0,	990,	930,	870,	810,	750,	690,	630,	570,	510,	450,	390,	330,	270,	210,	150,	90,	30,	0},
-			{0,	0,	0,	1000,	950,	900,	850,	800,	750,	700,	650,	600,	550,	500,	450,	400,	350,	300,	250,	0,	0},	};
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	780,	510,	240,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	790,	530,	270,	10,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	800,	550,	300,	50,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	810,	570,	330,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	820,	590,	360,	130,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	830,	610,	390,	170,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	840,	630,	420,	210,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	850,	650,	450,	250,	50,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	860,	670,	480,	290,	100,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	870,	690,	510,	330,	150,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	880,	710,	540,	370,	200,	30,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	890,	730,	570,	410,	250,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	900,	750,	600,	450,	300,	150,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	910,	770,	630,	490,	350,	210,	70,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	920,	790,	660,	530,	400,	270,	140,	10,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	930,	810,	690,	570,	450,	330,	210,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	940,	830,	720,	610,	500,	390,	280,	170,	60,	0,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	950,	850,	750,	650,	550,	450,	350,	250,	150,	50,	0,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	960,	870,	780,	690,	600,	510,	420,	330,	240,	150,	60,	0,	0,	0,	0,	0,	0,	0},
+		{0,	0,	0,	970,	890,	810,	730,	650,	570,	490,	410,	330,	250,	170,	90,	10,	0,	0,	0,	0,	0},
+		{0,	0,	0,	980,	910,	840,	770,	700,	630,	560,	490,	420,	350,	280,	210,	140,	70,	0,	0,	0,	0},
+		{0,	0,	0,	990,	930,	870,	810,	750,	690,	630,	570,	510,	450,	390,	330,	270,	210,	150,	90,	30,	0},
+		{0,	0,	0,	1000,	950,	900,	850,	800,	750,	700,	650,	600,	550,	500,	450,	400,	350,	300,	250,	0,	0},
+	};
 	
 	/**
 	 * Slot game pay table.
 	 */
-	private static final int[][] clusters = {
+	private static final int[][] blocks = {
 		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
 		{0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
 		{0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
@@ -123,7 +145,514 @@ public class Main {
 		{3,6,5,4,6,11,9,4,6,5,4,16,17,4,7,5,8,6,7,14,15,10,3,6,8,7,12,13,10,3,8,11,16,17,14,15,12,13,3,4,16,17,9,6,16,17,16,17,5,3,7,10,11,10,12,13,10,16,17,5,3,4,9,},	
 	};
 	
+	/**
+	 * Total bet in single base game spin.
+	 * 
+	 * May be it can be related with the number of the clusters.
+	 */
+	private static int totalBet = 30;
+	
+	/**
+	 * Total amount of won money.
+	 */
+	private static long totalWonMoney = 0L;
+	
+	/**
+	 * Total amount of lost money.
+	 */
+	private static long totalLostMoney = 0L;
+	
+	/**
+	 * Total amount of won money in base game.
+	 */
+	private static long baseGameWonMoney = 0L;
+	
+	/**
+	 * Total amount of won money in free spins.
+	 */
+	private static long freeGamesWonMoney = 0L;
+	/**
+	 * Max amount of won money in base game.
+	 */
+	private static long baseMaxWin = 0L;
+	
+	/**
+	 * Max amount of won money in free spins.
+	 */
+	private static long freeMaxWin = 0L;
+	/**
+	 * Total number of base games played.
+	 */
+	private static long totalNumberOfBaseGames = 0L;
+	
+	/**
+	 * Total number of free spins played.
+	 */
+	private static long totalNumberOfFreeGames = 0L;
+	
+	/**
+	 * Total number of free spins started.
+	 */
+	private static long totalNumberOfFreeGamesStarts = 0L;
+	
+	/**
+	 * Hit rate of wins in base game.
+	 */
+	private static long baseGameHitRate = 0L;
+	
+	/**
+	 * Hit rate of wins in free spins.
+	 */
+	private static long freeGamesHitRate = 0L;
+	
+	/**
+	 * Free spins flag.
+	 */
+	private static boolean freeGamesOff = false;
+	
+	/**
+	 * Wild substitution flag.
+	 */
+	private static boolean wildsSubstitutionOff = false;	
+	
+	/**
+	 * Verbose output flag.
+	 */
+	private static boolean verboseOutput = false;
+	
+	/**
+	 * Symbols win hit rate in base game.
+	 */
+	private static long[][] baseGameSymbolWonMoney = {
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	};
+	
+	/**
+	 * Symbols hit rate in base game.
+	 */
+	private static long[][] baseGameSymbolsHitRate = {
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	};
+
+	/**
+	 * Single reels spin to fill view with symbols.
+	 *
+	 * @param reels Reels strips.
+	 */
+	private static void spin(int[][] reels) {
+		for (int i = 0; i < view.length && i < reels.length; i++) {
+			int r = PRNG.nextInt(reels[i].length);
+			
+			for(int j=0; j < view[i].length; j++) {
+				int s = (r + j) % reels[i].length;
+				view[i][j] = reels[i][s];
+			}
+		}
+	}
+
+	/**
+	 * Play single base game.
+	 */
+	private static void singleBaseGame() {
+		/*
+		 * Spin reels.
+		 */
+		spin( reels );
+
+		/* 
+		 * Setup free games.
+		 */
+		
+		/*
+		 * Win accumulated by lines.
+		 */
+		int win = clustersWin( view );
+		
+		/*
+		 * Add win to the statistics.
+		 */
+		baseGameWonMoney += win;
+		totalWonMoney += win;
+		if(baseMaxWin < win) {
+			baseMaxWin = win;
+		}
+		
+		/*
+		 * Count base game hit rate.
+		 */
+		if(win > 0) {
+			baseGameHitRate++;
+		}
+
+		/*
+		 * Count into free spins hit rate.
+		 */
+		
+		/*
+		 * Play all free games.
+		 */
+	}
+
+	/**
+	 * Calculate cluster wins.
+	 * 
+	 * @param view Slot game screen.
+	 * 
+	 * @return Current screen win amount.
+	 */
+	private static int clustersWin(int[][] view) {
+		return 0;
+	}
+
+	/**
+	 * Print screen view.
+	 */
+	private static void printView () {
+		int max = view[0].length;
+		for (int i=0; i<view.length; i++) {
+			if(max < view[i].length) {
+				max = view[i].length;
+			}
+		}
+		
+		for(int j=0; j<max; j++) {
+			for (int i=0; i<view.length && j<view[i].length; i++) {
+				if(view[i][j] < 10 && view[i][j]>=0) {
+					System.out.print(" ");
+				}
+				System.out.print(view[i][j] + " ");
+			}
+			
+			System.out.println();
+		}
+	}
+
+	/**
+	 * Print all simulation input data structures.
+	 */
+	private static void printDataStructures() {
+		/*
+		 * Pay table printing.
+		 */
+		System.out.println("Paytable:");
+		for(int i=0; i<paytable.length; i++) {
+			System.out.print("\t" + i + " of");
+		}
+		System.out.println();
+		for(int j=0; j<paytable[0].length; j++) {
+			System.out.print(symbols[j] + "\t");
+			for(int i=0; i<paytable.length; i++) {
+				System.out.print(paytable[i][j] + "\t");
+			}
+			System.out.println();
+		}
+		System.out.println();
+		
+		System.out.println("Base Game Reels:");
+		for(int i=0; i<reels.length; i++) {
+			for(int j=0; j<reels[i].length; j++) {
+				if(j % 10 == 0) {
+					System.out.println();
+				}
+				System.out.print("SYM" + reels[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+		
+		System.out.println("Base Game Reels:");
+		/* 
+		 * Count symbols in reels. 
+		 */ {
+			int[][] counters = {
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			};
+			for(int i=0; i<reels.length; i++) {
+				for(int j=0; j<reels[i].length; j++) {
+					counters[i][reels[i][j]]++;
+				}
+			}
+			for(int i=0; i<reels.length; i++) {
+				System.out.print("\tReel " + (i+1));
+			}
+			System.out.println();
+			for(int j=0; j<counters[0].length; j++) {
+				System.out.print("SYM" + j + "\t");
+				for(int i=0; i<counters.length; i++) {
+					System.out.print(counters[i][j] + "\t");
+				}
+				System.out.println();
+			}
+			System.out.println("---------------------------------------------");
+			System.out.print("Total:\t");
+			long combinations = 1L;
+			for(int i=0; i<counters.length; i++) {
+				int sum = 0;
+				for(int j=0; j<counters[0].length; j++) {
+					sum += counters[i][j];
+				}
+				System.out.print(sum + "\t");
+				if(sum != 0) {
+					combinations *= sum;
+				}
+			}
+			System.out.println();
+			System.out.println("---------------------------------------------");
+			System.out.println("Combinations:\t" + combinations);
+		}
+		System.out.println();
+	}
+
+	/**
+	 * Print simulation statistics.
+	 */
+	private static void printStatistics () {
+		System.out.println("Won money:\t" + totalWonMoney);
+		System.out.println("Lost money:\t" + totalLostMoney);
+		System.out.println("Total Number of Games:\t" + totalNumberOfBaseGames);
+		System.out.println();
+		System.out.println("Total RTP:\t" + ((double)totalWonMoney / (double)totalLostMoney) + "\t\t" + (100.0D * (double)totalWonMoney / (double)totalLostMoney) + "%");
+		System.out.println("Base Game RTP:\t" + ((double)baseGameWonMoney / (double)totalLostMoney) + "\t\t" + (100.0D * (double)baseGameWonMoney / (double)totalLostMoney) + "%");
+		System.out.println("Free Game RTP:\t" + ((double)freeGamesWonMoney / (double)totalLostMoney) + "\t\t" + (100.0D * (double)freeGamesWonMoney / (double)totalLostMoney) + "%");
+		System.out.println();
+		System.out.println("Hit Frequency in Base Game:\t" + ((double)baseGameHitRate / (double)totalNumberOfBaseGames) + "\t\t" + (100.0D * (double)baseGameHitRate / (double)totalNumberOfBaseGames) + "%");
+		System.out.println("Hit Frequency into Free Game:\t" + ((double)totalNumberOfFreeGamesStarts / (double)totalNumberOfBaseGames) + "\t\t" + (100.0D * (double)totalNumberOfFreeGamesStarts / (double)totalNumberOfBaseGames) + "%");
+		System.out.println();
+		System.out.println("Max Win in Base Game:\t" + baseMaxWin);
+		System.out.println("Max Win in Free Game:\t" + freeMaxWin);
+	}
+
+	/**
+	 * Print simulation execution command.
+	 *
+	 * @param args Command line arguments list.
+	 */
+	private static void printExecuteCommand(String[] args) {
+		System.out.println( "Execute command:" );
+		System.out.println();
+		System.out.print( "java Main " );
+		for(int i=0; i<args.length; i++) {
+			System.out.print(args[i] + " ");
+		}
+		System.out.println();
+	}
+
+	/**
+	 * Print help information.
+	 */
+	private static void printHelp () {
+		System.out.println( "*******************************************************************************" );
+		System.out.println( "* Candy Clusters Slot Simulation version 0.0.0                                *" );
+		System.out.println( "* Copyrights (C) 2017                                                         *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "* developed by                                                                *" );
+		System.out.println( "* India                                                                       *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "* This program is free software: you can redistribute it and/or modify        *" );
+		System.out.println( "* it under the terms of the GNU General Public License as published by        *" );
+		System.out.println( "* the Free Software Foundation, either version 3 of the License, or           *" );
+		System.out.println( "* (at your option) any later version.                                         *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "* This program is distributed in the hope that it will be useful,             *" );
+		System.out.println( "* but WITHOUT ANY WARRANTY; without even the implied warranty of              *" );
+		System.out.println( "* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               *" );
+		System.out.println( "* GNU General Public License for more details.                                *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "* You should have received a copy of the GNU General Public License           *" );
+		System.out.println( "* along with this program. If not, see <http://www.gnu.org/licenses/>.        *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "*******************************************************************************" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "* -h              Help screen.                                                *" );
+		System.out.println( "* -help           Help screen.                                                *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "* -g<number>      Number of games (default 10 000 000).                       *" );
+		System.out.println( "* -p<number>      Progress on each iteration number (default 10 000 000).     *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "* -freeoff        Switch off free spins.                                      *" );
+		System.out.println( "* -wildsoff       Switch off wilds.                                           *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "* -verify         Print input data structures.                                *" );
+		System.out.println( "*                                                                             *" );
+		System.out.println( "*******************************************************************************" );
+	}
+	
+	/**
+	 * Method single entry point.
+	 * 
+	 * @param args Command line arguments.
+	 */
 	public static void main(String[] args) {
+		printExecuteCommand(args);
+		System.out.println();
+		
+		long numberOfSimulations = 10000000L;
+		long progressPrintOnIteration = 10000000L;
+		
+		/*
+		 * Parse command line arguments.
+		 */
+		for(int a=0; a<args.length; a++) {
+			if(args.length > 0 && args[a].contains("-g")) {
+				String parameter = args[a].substring(2);
+				
+				if(parameter.contains("k")) {
+					parameter = parameter.substring(0, parameter.length()-1);
+					parameter += "000";
+				}
+				
+				if(parameter.contains("m")) {
+					parameter = parameter.substring(0, parameter.length()-1);
+					parameter += "000000";
+				}
+				
+				try {
+					numberOfSimulations = Integer.valueOf( parameter );
+				} catch(Exception exception) {
+				}
+			}
+			
+			if(args.length > 0 && args[a].contains("-p")) {
+				String parameter = args[a].substring(2);
+				
+				if(parameter.contains("k")) {
+					parameter = parameter.substring(0, parameter.length()-1);
+					parameter += "000";
+				}
+				
+				if(parameter.contains("m")) {
+					parameter = parameter.substring(0, parameter.length()-1);
+					parameter += "000000";
+				}
+				
+				try {
+					progressPrintOnIteration = Integer.valueOf( parameter );
+					verboseOutput = true;
+				} catch(Exception exception) {
+				}
+			}
+
+			if(args.length > 0 && args[a].contains("-freeoff")) {
+				freeGamesOff = true;
+			}
+			
+			if(args.length > 0 && args[a].contains("-wildsoff")) {
+				wildsSubstitutionOff = true;
+			}
+			
+			if(args.length > 0 && args[a].contains("-verify")) {
+				printDataStructures();
+				System.exit(0);
+			}
+			
+			if(args.length > 0 && args[a].contains("-help")) {
+				printHelp();
+				System.out.println();
+				System.exit(0);
+			}
+			
+			if(args.length > 0 && args[a].contains("-h")) {
+				printHelp();
+				System.out.println();
+				System.exit(0);
+			}
+		}
+		
+		/*
+		 * Simulation main loop.
+		 */
+		for (long g = 0L; g < numberOfSimulations; g++) {
+			if(verboseOutput == true && g==0) {
+				System.out.println("Games\tRTP\tRTP(Base)\tRTP(Free)");
+			}
+
+			/*
+			 * Print progress report.
+			 */
+			if(verboseOutput == true && g%progressPrintOnIteration == 0) {
+				try {
+					System.out.print(g);
+					System.out.print("\t");
+					System.out.print(String.format("  %12.6f", ((double) totalWonMoney / (double) totalLostMoney)));
+					System.out.print("\t");
+					System.out.print(String.format("  %12.6f", ((double) baseGameWonMoney / (double) totalLostMoney)));
+					System.out.print("\t");
+					System.out.print(String.format("  %12.6f", ((double) freeGamesWonMoney / (double) totalLostMoney)));
+				} catch( Exception exception) {
+				}
+				System.out.println();
+			}
+			
+			totalNumberOfBaseGames++;
+			totalLostMoney += totalBet;
+			singleBaseGame();
+		}
+		
+		System.out.println("********************************************************************************");
+		printStatistics();
+		System.out.println("********************************************************************************");
 	}
 
 }
