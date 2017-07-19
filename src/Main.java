@@ -1,9 +1,31 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
  * Simulation single entry point.
  */
 public class Main {
+	
+	/**
+	 * For keep tracking of wins.
+	 */
+	private static class Win{
+		int symbol;
+		int size;
+		
+		/**
+		 * Constructor with all parameters.
+		 * 
+		 * @param symbol Symbol on the screen.
+		 * @param size Size of its cluster.
+		 */
+		public Win(int symbol, int size) {
+			super();
+			this.symbol = symbol;
+			this.size = size;
+		}
+	}
 	
 	/**
 	 * Pseudo-random number generator.
@@ -13,7 +35,7 @@ public class Main {
 	/**
 	 * Minimum wining cluster size.
 	 */
-	private static final int MIN_CLUSTER_SIZE = 8;
+	private static final int MIN_CLUSTER_SIZE = 3;
 	
 	/**
 	 * Maximum wining cluster size.
@@ -21,9 +43,14 @@ public class Main {
 	private static final int MAX_CLUSTER_SIZE = 30;
 	
 	/**
+	 * Empty constant used for back tracking algorithm.
+	 */
+	private static final int EMPTY = -1;
+	
+	/**
 	 * Current visible symbols on the screen.
 	 */
-	private static final int[][] view = {
+	private static int[][] view = {
 		{ -1, -1, -1, -1, -1, -1 },
 		{ -1, -1, -1, -1, -1, -1 },
 		{ -1, -1, -1, -1, -1, -1 },
@@ -34,13 +61,18 @@ public class Main {
 	/**
 	 * Current visible screen clusters.
 	 */
-	private static final int[][] clusters = {
+	private static int[][] clusters = {
 		{ -1, -1, -1, -1, -1, -1 },
 		{ -1, -1, -1, -1, -1, -1 },
 		{ -1, -1, -1, -1, -1, -1 },
 		{ -1, -1, -1, -1, -1, -1 },
 		{ -1, -1, -1, -1, -1, -1 },
 	};
+	
+	/**
+	 * Keep track of the winning information.
+	 */
+	private static List<Win> winnings = new ArrayList<>();
 	
 	/**
 	 * List of symbols names.
@@ -73,35 +105,35 @@ public class Main {
 	 */
 	private static final int[][] paytable = {
 		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	780,	510,	240,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	790,	530,	270,	10,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	800,	550,	300,	50,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	810,	570,	330,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	820,	590,	360,	130,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	830,	610,	390,	170,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	840,	630,	420,	210,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	850,	650,	450,	250,	50,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	860,	670,	480,	290,	100,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	870,	690,	510,	330,	150,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	880,	710,	540,	370,	200,	30,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	890,	730,	570,	410,	250,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	900,	750,	600,	450,	300,	150,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	910,	770,	630,	490,	350,	210,	70,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	920,	790,	660,	530,	400,	270,	140,	10,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	930,	810,	690,	570,	450,	330,	210,	90,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	940,	830,	720,	610,	500,	390,	280,	170,	60,	0,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	950,	850,	750,	650,	550,	450,	350,	250,	150,	50,	0,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	960,	870,	780,	690,	600,	510,	420,	330,	240,	150,	60,	0,	0,	0,	0,	0,	0,	0},
-		{0,	0,	0,	970,	890,	810,	730,	650,	570,	490,	410,	330,	250,	170,	90,	10,	0,	0,	0,	0,	0},
-		{0,	0,	0,	980,	910,	840,	770,	700,	630,	560,	490,	420,	350,	280,	210,	140,	70,	0,	0,	0,	0},
-		{0,	0,	0,	990,	930,	870,	810,	750,	690,	630,	570,	510,	450,	390,	330,	270,	210,	150,	90,	30,	0},
+		{0,	0,	0,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	20,	20,	20,	20,	20,	20,	20,	20,	20,	20,	20,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	30,	30,	30,	30,	30,	30,	30,	30,	30,	30,	30,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	40,	40,	40,	40,	40,	40,	40,	40,	40,	40,	40,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	50,	50,	50,	50,	50,	50,	50,	50,	50,	50,	50,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	60,	60,	60,	50,	60,	60,	60,	60,	60,	60,	60,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	70,	70,	70,	50,	70,	70,	70,	70,	70,	70,	70,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	780,	510,	240,50,	80,	80,	80,	80,	80,	80,	80,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	790,	530,	270,	50,	90,	90,	90,	90,	90,	90,	90,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	800,	550,	300,	50,	100,	100,	100,	100,	100,	100,	100,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	810,	570,	330,	90,	110,	110,	110,	110,	110,	110,	110,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	820,	590,	360,	130,	120,	120,	120,	120,	120,	120,	120,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	830,	610,	390,	170,	130,	130,	130,	130,	130,	130,	130,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	840,	630,	420,	210,	140,	140,	140,	140,	140,	140,	140,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	850,	650,	450,	250,	150,	150,	150,	150,	150,	150,	150,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	860,	670,	480,	290,	150,	160,	160,	160,	160,	160,	160,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	870,	690,	510,	330,	150,	170,	170,	170,	170,	170,	170,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	880,	710,	540,	370,	200,	180,	180,	180,	180,	180,	180,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	890,	730,	570,	410,	250,	190,	190,	190,	190,	190,	190,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	900,	750,	600,	450,	300,	200,	200,	200,	200,	200,	200,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	910,	770,	630,	490,	350,	210,	210,	210,	210,	210,	210,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	920,	790,	660,	530,	400,	270,	220,	220,	220,	220,	220,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	930,	810,	690,	570,	450,	330,	230,	230,	230,	230,	230,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	940,	830,	720,	610,	500,	390,	280,	240,	240,	240,	240,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	950,	850,	750,	650,	550,	450,	350,	250,	260,	250,	250,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	960,	870,	780,	690,	600,	510,	420,	330,	270,	260,	260,	10,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	970,	890,	810,	730,	650,	570,	490,	410,	330,	270,	270,	90,	10,	10,	10,	10,	0,	0},
+		{0,	0,	0,	980,	910,	840,	770,	700,	630,	560,	490,	420,	350,	280,	210,	140,	70,	10,	10,	0,	0},
+		{0,	0,	0,	990,	930,	870,	810,	750,	690,	630,	570,	510,	450,	390,	330,	270,	210,	150,	90,	0,	0},
 		{0,	0,	0,	1000,	950,	900,	850,	800,	750,	700,	650,	600,	550,	500,	450,	400,	350,	300,	250,	0,	0},
 	};
 	
@@ -309,6 +341,146 @@ public class Main {
 	}
 
 	/**
+	 * Clear previous clustering information.
+	 */
+	private static void claerClustersInfo() {
+		clusters = new int[][]{
+				{ -1, -1, -1, -1, -1, -1 },
+				{ -1, -1, -1, -1, -1, -1 },
+				{ -1, -1, -1, -1, -1, -1 },
+				{ -1, -1, -1, -1, -1, -1 },
+				{ -1, -1, -1, -1, -1, -1 },
+			};	
+			
+		winnings.clear();
+	}
+
+	/**
+	 * Locate cluster and calculate its size.
+	 * 
+	 * @param view Screen with symbols.
+	 * @param clusters Matrix with the clusters already found.
+	 * @param symbol Symbol used in the cluster.
+	 * @param x Column to start searching. 
+	 * @param y Row to start searching.
+	 * 
+	 * @return Size of the cluster found.
+	 */
+	private static int locate(int[][] view, int[][] clusters, int symbol, int x, int y) {
+		/*
+		 * If it is outside of the screen do nothing.
+		 */
+		if(x < 0) {
+			return 0;
+		}
+		
+		/*
+		 * If it is outside of the screen do nothing.
+		 */
+		if(x >= view.length) {
+			return 0;
+		}
+		
+		/*
+		 * If it is outside of the screen do nothing.
+		 */
+		if(y < 0) {
+			return 0;
+		}
+		
+		/*
+		 * If it is outside of the screen do nothing.
+		 */
+		if(y >= view[x].length) {
+			return 0;
+		}
+
+		/*
+		 * If the cell is different than the cluster color do nothing.
+		 */
+		if(view[x][y] != symbol) {
+			return 0;
+		}
+
+		/*
+		 * If the cell was visited already do nothing.
+		 */
+		if(clusters[x][y] != EMPTY) {
+			return 0;
+		}
+
+		/*
+		 * New cluster cell found.
+		 */
+		clusters[x][y] = symbol;
+		return 1 + locate(view, clusters, symbol, x-1, y) + locate(view, clusters, symbol, x+1, y) + locate(view, clusters, symbol, x, y-1) + locate(view, clusters, symbol, x, y+1);
+	}
+
+	/**
+	 * Calculate cluster wins.
+	 * 
+	 * @param view Slot game screen.
+	 * 
+	 * @return Current screen win amount.
+	 */
+	private static int clustersWin(int[][] view) {
+		claerClustersInfo();
+
+		for (int i=0; i<view.length; i++) {
+			for(int j=0; j<view[i].length; j++) {
+				/*
+				 * Cluster was already found.
+				 */
+				if(clusters[i][j] != EMPTY) {
+					continue;
+				}
+				
+				/*
+				 * Keep track of the winning clusters.
+				 */
+				int size = locate(view, clusters, view[i][j], i, j);
+				if(MIN_CLUSTER_SIZE <= size && size <= MAX_CLUSTER_SIZE) {
+					winnings.add(new Win(view[i][j], size));
+				}
+			}
+		}
+
+		/*
+		 * Calculate total win of this screen.
+		 */
+		int result = 0;
+		for(Win win : winnings) {
+			result += paytable[win.size][win.symbol];
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Remove all symbols which were part of a wining cluster.
+	 * 
+	 * @param view Slot game screen.
+	 */
+	private static void removeWiningClusters(int[][] view) {
+	}
+
+	/**
+	 * Put symbols down to fill gaps on the screen.
+	 * 
+	 * @param view Slot game screen.
+	 */
+	private static void packEmptySpace(int[][] view) {
+	}
+
+	/**
+	 * Put symbols over the collapsed structures.
+	 * 
+	 * @param view Slot game screen.
+	 */
+	private static void refillEmptySpace(int[][] view) {
+	}
+
+	/**
 	 * Play single base game.
 	 */
 	private static void singleBaseGame() {
@@ -343,23 +515,33 @@ public class Main {
 		}
 
 		/*
+		 * Handle collapse feature.
+		 */
+		while(win > 0) {
+			win = 0;
+			removeWiningClusters( view );
+			packEmptySpace( view );
+			refillEmptySpace( view );
+			
+			//TODO win = clustersWin( view );
+			
+			/*
+			 * Add win to the statistics.
+			 */
+			baseGameWonMoney += win;
+			totalWonMoney += win;
+			if(baseMaxWin < win) {
+				baseMaxWin = win;
+			}
+		}
+		
+		/*
 		 * Count into free spins hit rate.
 		 */
 		
 		/*
 		 * Play all free games.
 		 */
-	}
-
-	/**
-	 * Calculate cluster wins.
-	 * 
-	 * @param view Slot game screen.
-	 * 
-	 * @return Current screen win amount.
-	 */
-	private static int clustersWin(int[][] view) {
-		return 0;
 	}
 
 	/**
